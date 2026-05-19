@@ -1,0 +1,404 @@
+CREATE TABLE Users (
+  user_id INTEGER PRIMARY KEY,
+  user_name TEXT
+);
+CREATE TABLE Genres (
+  genre_id INTEGER PRIMARY KEY,
+  genre_name TEXT
+);
+CREATE TABLE Movies (
+  movie_id INTEGER PRIMARY KEY,
+  movie_name TEXT,
+  genre_id INTEGER,
+  release_year INTEGER,
+  FOREIGN KEY (genre_id) REFERENCES Genres(genre_id)
+);
+CREATE TABLE Ratings (
+  rating_id INTEGER PRIMARY KEY,
+  user_id INTEGER,
+  movie_id INTEGER,
+  rating REAL,
+  review_date DATE,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id),
+  FOREIGN KEY (movie_id) REFERENCES Movies(movie_id)
+);
+INSERT INTO
+  Users
+VALUES
+  (1, 'NAVEEN'),
+  (2, 'Rahul'),
+  (3, 'Anjali'),
+  (4, 'Kiran'),
+  (5, 'Sneha'),
+  (6, 'Arjun'),
+  (7, 'Priya'),
+  (8, 'Vikram'),
+  (9, 'Meera'),
+  (10, 'Rohit'),
+  (11, 'Divya'),
+  (12, 'Suresh'),
+  (13, 'Aisha'),
+  (14, 'Manish'),
+  (15, 'Pooja');
+INSERT INTO
+  Genres
+VALUES
+  (1, 'Action'),
+  (2, 'Drama'),
+  (3, 'Romance'),
+  (4, 'Comedy'),
+  (5, 'Thriller'),
+  (6, 'Horror'),
+  (7, 'Sci-Fi'),
+  (8, 'Adventure'),
+  (9, 'Mystery'),
+  (10, 'Fantasy'),
+  (11, 'Crime'),
+  (12, 'Family'),
+  (13, 'Musical'),
+  (14, 'Biography'),
+  (15, 'War');
+INSERT INTO
+  Movies
+VALUES
+  (101, 'Love Forever', 3, 2022),
+  (102, 'Action King', 1, 2021),
+  (103, 'Drama Life', 2, 2020),
+  (104, 'Comedy Nights', 4, 2023),
+  (105, 'Mission Fire', 1, 2022),
+  (106, 'Silent Love', 3, 2021),
+  (107, 'Dark Drama', 2, 2024),
+  (108, 'No Rating Movie', 1, 2023),
+  (109, 'Midnight Chase', 5, 2022),
+  (110, 'Haunted House', 6, 2020),
+  (111, 'Future Zone', 7, 2024),
+  (112, 'Sky Adventure', 8, 2021),
+  (113, 'Hidden Truth', 9, 2023),
+  (114, 'Magic Realm', 10, 2022),
+  (115, 'City Crime', 11, 2024);
+INSERT INTO
+  Ratings
+VALUES
+  (1, 1, 101, 4.5, '2024-01-10'),
+  (2, 2, 101, 4.0, '2024-01-11'),
+  (3, 3, 102, 5.0, '2024-01-12'),
+  (4, 1, 103, 2.5, '2024-01-13'),
+  (5, 2, 103, 3.0, '2024-01-14'),
+  (6, 4, 104, 1.5, '2024-01-15'),
+  (7, 3, 105, 4.8, '2024-01-16'),
+  (8, 4, 105, 4.6, '2024-01-17'),
+  (9, 5, 106, 4.2, '2024-01-18'),
+  (10, 1, 106, 4.4, '2024-01-19'),
+  (11, 2, 107, 1.8, '2024-01-20'),
+  (12, 3, 107, 1.5, '2024-01-21'),
+  (13, 6, 108, 3.9, '2024-01-22'),
+  (14, 7, 109, 4.1, '2024-01-23'),
+  (15, 8, 110, 2.7, '2024-01-24');
+
+-- =========================================
+-- TASK 1
+-- Average rating for each movie
+-- showing only those above overall average
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id
+HAVING
+  AVG(r.rating) > (
+    SELECT
+      AVG(rating)
+    FROM
+      Ratings
+  );
+
+-- =========================================
+-- TASK 2
+-- Top 10 highest-rated movies
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id
+ORDER BY
+  avg_rating DESC
+LIMIT
+  10;
+
+-- =========================================
+-- TASK 3
+-- Movies with no ratings
+-- =========================================
+SELECT
+  m.movie_name
+FROM
+  Movies m
+  LEFT JOIN Ratings r ON m.movie_id = r.movie_id
+WHERE
+  r.rating_id IS NULL;
+
+-- =========================================
+-- TASK 4
+-- Movie label:
+-- Hit (>4), Average (2-4), Flop (<2)
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating,
+  CASE
+    WHEN AVG(r.rating) > 4 THEN 'Hit'
+    WHEN AVG(r.rating) BETWEEN 2
+    AND 4 THEN 'Average'
+    ELSE 'Flop'
+  END AS movie_label
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id;
+
+-- =========================================
+-- TASK 5
+-- Movies belonging to specific genres
+-- =========================================
+SELECT
+  m.movie_name,
+  g.genre_name
+FROM
+  Movies m
+  JOIN Genres g ON m.genre_id = g.genre_id
+WHERE
+  g.genre_name IN ('Action', 'Drama');
+
+-- =========================================
+-- TASK 6
+-- Movies containing "Love"
+-- =========================================
+SELECT
+  movie_name
+FROM
+  Movies
+WHERE
+  movie_name LIKE '%Love%';
+
+-- =========================================
+-- TASK 7
+-- Ratings within date range
+-- =========================================
+SELECT
+  *
+FROM
+  Ratings
+WHERE
+  review_date BETWEEN '2024-01-10'
+  AND '2024-01-15';
+
+-- =========================================
+-- TASK 8
+-- Movies rated above 4
+-- and having more than 1 review
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating,
+  COUNT(r.rating_id) AS total_reviews
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id
+HAVING
+  AVG(r.rating) > 4
+  AND COUNT(r.rating_id) > 1;
+
+-- =========================================
+-- TASK 9
+-- Reusable result using VIEW
+-- Movie rating summary
+-- =========================================
+CREATE VIEW Movie_Rating_Summary AS
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating,
+  COUNT(r.rating_id) AS total_reviews
+FROM
+  Movies m
+  LEFT JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id;
+
+-- View Output
+SELECT
+  *
+FROM
+  Movie_Rating_Summary;
+
+INSERT INTO
+  Ratings
+VALUES
+  (1, 1, 101, 4.5, '2024-01-10'),
+  (2, 2, 101, 4.0, '2024-01-11'),
+  (3, 3, 102, 5.0, '2024-01-12'),
+  (4, 1, 103, 2.5, '2024-01-13'),
+  (5, 2, 103, 3.0, '2024-01-14'),
+  (6, 4, 104, 1.5, '2024-01-15'),
+  (7, 3, 105, 4.8, '2024-01-16'),
+  (8, 4, 105, 4.6, '2024-01-17'),
+  (9, 5, 106, 4.2, '2024-01-18'),
+  (10, 1, 106, 4.4, '2024-01-19'),
+  (11, 2, 107, 1.8, '2024-01-20'),
+  (12, 3, 107, 1.5, '2024-01-21');
+
+-- =========================================
+-- TASK 1
+-- Average rating for each movie
+-- showing only those above overall average
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id
+HAVING
+  AVG(r.rating) > (
+    SELECT
+      AVG(rating)
+    FROM
+      Ratings
+  );
+
+-- =========================================
+-- TASK 2
+-- Top 5 highest-rated movies
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id
+ORDER BY
+  avg_rating DESC
+LIMIT
+  5;
+
+-- =========================================
+-- TASK 3
+-- Movies with no ratings
+-- =========================================
+SELECT
+  m.movie_name
+FROM
+  Movies m
+  LEFT JOIN Ratings r ON m.movie_id = r.movie_id
+WHERE
+  r.rating_id IS NULL;
+
+-- =========================================
+-- TASK 4
+-- Movie label:
+-- Hit (>4), Average (2-4), Flop (<2)
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating,
+  CASE
+    WHEN AVG(r.rating) > 4 THEN 'Hit'
+    WHEN AVG(r.rating) BETWEEN 2
+    AND 4 THEN 'Average'
+    ELSE 'Flop'
+  END AS movie_label
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id;
+
+-- =========================================
+-- TASK 5
+-- Movies belonging to specific genres
+-- =========================================
+SELECT
+  m.movie_name,
+  g.genre_name
+FROM
+  Movies m
+  JOIN Genres g ON m.genre_id = g.genre_id
+WHERE
+  g.genre_name IN ('Action', 'Drama');
+
+-- =========================================
+-- TASK 6
+-- Movies containing "Love"
+-- =========================================
+SELECT
+  movie_name
+FROM
+  Movies
+WHERE
+  movie_name LIKE '%Love%';
+
+-- =========================================
+-- TASK 7
+-- Ratings within date range
+-- =========================================
+SELECT
+  *
+FROM
+  Ratings
+WHERE
+  review_date BETWEEN '2024-01-10'
+  AND '2024-01-15';
+
+-- =========================================
+-- TASK 8
+-- Movies rated above 4
+-- and having more than 1 review
+-- =========================================
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating,
+  COUNT(r.rating_id) AS total_reviews
+FROM
+  Movies m
+  JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id
+HAVING
+  AVG(r.rating) > 4
+  AND COUNT(r.rating_id) > 1;
+
+-- =========================================
+-- TASK 9
+-- Reusable result using VIEW
+-- Movie rating summary
+-- =========================================
+CREATE VIEW Movie_Rating_Summary AS
+SELECT
+  m.movie_name,
+  AVG(r.rating) AS avg_rating,
+  COUNT(r.rating_id) AS total_reviews
+FROM
+  Movies m
+  LEFT JOIN Ratings r ON m.movie_id = r.movie_id
+GROUP BY
+  m.movie_id;
+
+-- View Output
+SELECT
+  *
+FROM
+  Movie_Rating_Summary;
